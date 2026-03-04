@@ -59,6 +59,20 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData)
       });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMessage = 'Login failed';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = `Server returned ${res.status}: ${errorText.slice(0, 50)}...`;
+        }
+        setLoginError(errorMessage);
+        return;
+      }
+
       const data = await res.json();
       if (data.success && data.token) {
         localStorage.setItem('slz_token', data.token);
@@ -67,8 +81,9 @@ export default function App() {
       } else {
         setLoginError(data.error || 'Login failed');
       }
-    } catch (e) {
-      setLoginError('Server error');
+    } catch (e: any) {
+      console.error('Login error:', e);
+      setLoginError(`Connection error: ${e.message || 'Unknown error'}`);
     }
   };
 

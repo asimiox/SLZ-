@@ -21,88 +21,93 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-const db = new Database('slz.db');
+const dbPath = process.env.VERCEL ? '/tmp/slz.db' : 'slz.db';
+const db = new Database(dbPath);
 const JWT_SECRET = 'slz-jwt-secret-key-2026-v1';
 
 // --- Database Initialization ---
-db.exec(`
-  CREATE TABLE IF NOT EXISTS admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password_hash TEXT
-  );
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE,
+      password_hash TEXT
+    );
 
-  CREATE TABLE IF NOT EXISTS departments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE,
-    whatsapp_link TEXT
-  );
+    CREATE TABLE IF NOT EXISTS departments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE,
+      whatsapp_link TEXT
+    );
 
-  CREATE TABLE IF NOT EXISTS subjects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    department_id INTEGER,
-    semester_number INTEGER,
-    subject_name TEXT,
-    FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE
-  );
+    CREATE TABLE IF NOT EXISTS subjects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      department_id INTEGER,
+      semester_number INTEGER,
+      subject_name TEXT,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE
+    );
 
-  CREATE TABLE IF NOT EXISTS categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category_name TEXT UNIQUE
-  );
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_name TEXT UNIQUE
+    );
 
-  CREATE TABLE IF NOT EXISTS resources (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    department_id INTEGER,
-    semester_number INTEGER,
-    subject_id INTEGER,
-    category_id INTEGER,
-    title TEXT,
-    drive_link TEXT,
-    description TEXT,
-    status TEXT DEFAULT 'active',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE,
-    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-  );
-`);
+    CREATE TABLE IF NOT EXISTS resources (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      department_id INTEGER,
+      semester_number INTEGER,
+      subject_id INTEGER,
+      category_id INTEGER,
+      title TEXT,
+      drive_link TEXT,
+      description TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE,
+      FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+  `);
 
-// Seed Admin if not exists (password: admin123)
-const adminExists = db.prepare('SELECT * FROM admins WHERE username = ?').get('admin');
-if (!adminExists) {
-  const hash = bcrypt.hashSync('admin123', 10);
-  db.prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)').run('admin', hash);
-}
+  // Seed Admin if not exists (password: admin123)
+  const adminExists = db.prepare('SELECT * FROM admins WHERE username = ?').get('admin');
+  if (!adminExists) {
+    const hash = bcrypt.hashSync('admin123', 10);
+    db.prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)').run('admin', hash);
+  }
 
-// Seed initial categories if empty
-const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get() as { count: number };
-if (catCount.count === 0) {
-  const cats = ['Notes', 'Past Papers', 'Assignments', 'Quiz', 'Announcement', 'Other'];
-  const insertCat = db.prepare('INSERT INTO categories (category_name) VALUES (?)');
-  cats.forEach(c => insertCat.run(c));
-}
+  // Seed initial categories if empty
+  const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get() as { count: number };
+  if (catCount.count === 0) {
+    const cats = ['Notes', 'Past Papers', 'Assignments', 'Quiz', 'Announcement', 'Other'];
+    const insertCat = db.prepare('INSERT INTO categories (category_name) VALUES (?)');
+    cats.forEach(c => insertCat.run(c));
+  }
 
-// Seed initial departments if empty
-const deptCount = db.prepare('SELECT COUNT(*) as count FROM departments').get() as { count: number };
-if (deptCount.count === 0) {
-  const initialDepts = [
-    { name: 'BS English', link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
-    { name: 'BS Chemistry', link: 'https://chat.whatsapp.com/JOrTsUNoxUz3pkhk2IwRrX' },
-    { name: 'BS Computer Science (BSCS)', link: 'https://chat.whatsapp.com/FgokbFFSTk97rS2IjXU7S2' },
-    { name: 'BS Information Technology (BSIT)', link: 'https://chat.whatsapp.com/CN29l48FI3UCzU8vM7y02Z' },
-    { name: 'BS Botany', link: 'https://chat.whatsapp.com/FlzUdgtjO5rGSkfNn1omeG' },
-    { name: 'BS Statistics', link: 'https://chat.whatsapp.com/G7j3sa7KF69E5yqVYkvBlE' },
-    { name: 'BBA Department', link: 'https://chat.whatsapp.com/DAck5r6xL0rI16SFjSLIBp' },
-    { name: 'BS Islamiyat', link: 'https://chat.whatsapp.com/ELZAlLcIIpK8dV3cEP8NzD' },
-    { name: 'BS Zoology', link: 'https://chat.whatsapp.com/BUJ53hvRZ6UCGYNpjEykdJ' },
-    { name: 'PHARM-D (Prof-01)', link: 'https://chat.whatsapp.com/GxUzlQCR2ROIsTfHT8F4JX' },
-    { name: 'PHARM-D (Prof-02)', link: 'https://chat.whatsapp.com/IWUY8XFn7Ta8t4EIWWzTre' },
-    { name: 'PHARM-D (Prof-03)', link: 'https://chat.whatsapp.com/I9Zh7AaQZxO9aXUmIdwwcT' }
-  ];
-  const insertDept = db.prepare('INSERT INTO departments (name, whatsapp_link) VALUES (?, ?)');
-  initialDepts.forEach(d => insertDept.run(d.name, d.link));
+  // Seed initial departments if empty
+  const deptCount = db.prepare('SELECT COUNT(*) as count FROM departments').get() as { count: number };
+  if (deptCount.count === 0) {
+    const initialDepts = [
+      { name: 'BS English', link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
+      { name: 'BS Chemistry', link: 'https://chat.whatsapp.com/JOrTsUNoxUz3pkhk2IwRrX' },
+      { name: 'BS Computer Science (BSCS)', link: 'https://chat.whatsapp.com/FgokbFFSTk97rS2IjXU7S2' },
+      { name: 'BS Information Technology (BSIT)', link: 'https://chat.whatsapp.com/CN29l48FI3UCzU8vM7y02Z' },
+      { name: 'BS Botany', link: 'https://chat.whatsapp.com/FlzUdgtjO5rGSkfNn1omeG' },
+      { name: 'BS Statistics', link: 'https://chat.whatsapp.com/G7j3sa7KF69E5yqVYkvBlE' },
+      { name: 'BBA Department', link: 'https://chat.whatsapp.com/DAck5r6xL0rI16SFjSLIBp' },
+      { name: 'BS Islamiyat', link: 'https://chat.whatsapp.com/ELZAlLcIIpK8dV3cEP8NzD' },
+      { name: 'BS Zoology', link: 'https://chat.whatsapp.com/BUJ53hvRZ6UCGYNpjEykdJ' },
+      { name: 'PHARM-D (Prof-01)', link: 'https://chat.whatsapp.com/GxUzlQCR2ROIsTfHT8F4JX' },
+      { name: 'PHARM-D (Prof-02)', link: 'https://chat.whatsapp.com/IWUY8XFn7Ta8t4EIWWzTre' },
+      { name: 'PHARM-D (Prof-03)', link: 'https://chat.whatsapp.com/I9Zh7AaQZxO9aXUmIdwwcT' }
+    ];
+    const insertDept = db.prepare('INSERT INTO departments (name, whatsapp_link) VALUES (?, ?)');
+    initialDepts.forEach(d => insertDept.run(d.name, d.link));
+  }
+} catch (dbError) {
+  console.error('Database initialization error:', dbError);
 }
 
 
@@ -144,13 +149,18 @@ async function startServer() {
 
   // --- Auth Routes ---
   app.post('/api/auth/login', (req, res) => {
-    const { username, password } = req.body;
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username) as any;
-    if (admin && bcrypt.compareSync(password, admin.password_hash)) {
-      const token = jwt.sign({ adminId: admin.id }, JWT_SECRET, { expiresIn: '24h' });
-      res.json({ success: true, token, message: 'Logged in' });
-    } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+    try {
+      const { username, password } = req.body;
+      const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username) as any;
+      if (admin && bcrypt.compareSync(password, admin.password_hash)) {
+        const token = jwt.sign({ adminId: admin.id }, JWT_SECRET, { expiresIn: '24h' });
+        res.json({ success: true, token, message: 'Logged in' });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } catch (loginError: any) {
+      console.error('Login error:', loginError);
+      res.status(500).json({ error: `Server error: ${loginError.message}` });
     }
   });
 
