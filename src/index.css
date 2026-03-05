@@ -4,33 +4,43 @@
 @theme {
   --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
   
-  --color-primary: #1E3A8A;
-  --color-accent: #FBBF24;
+  --color-primary: #c6f023; /* Neon Green */
+  --color-accent: #c6f023;
   
-  --shadow-brutal: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-  --shadow-brutal-hover: 8px 8px 0px 0px rgba(0, 0, 0, 1);
-  --shadow-brutal-sm: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  --shadow-brutal: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  --shadow-brutal-hover: 10px 10px 0px 0px rgba(0, 0, 0, 1);
+  --shadow-brutal-sm: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
 @layer base {
   body {
-    @apply bg-[#F3F4F6] text-black font-sans;
+    @apply bg-white text-black font-sans;
   }
 }
 
 @layer components {
   .brutal-card {
     background-color: white;
-    border-width: 4px;
+    border-width: 2px;
     border-color: black;
-    box-shadow: var(--shadow-brutal);
+    border-radius: 24px;
+    box-shadow: none;
     transition-property: all;
     transition-duration: 200ms;
   }
   
   .brutal-card:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: var(--shadow-brutal-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   }
 
   .brutal-btn {
@@ -41,27 +51,30 @@
     padding-right: 1.5rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
-    border-width: 4px;
+    border-width: 2px;
     border-color: black;
-    box-shadow: var(--shadow-brutal);
+    border-radius: 9999px;
     font-weight: 700;
     transition-property: all;
     transition-duration: 200ms;
     cursor: pointer;
   }
 
+  .brutal-btn:hover {
+    transform: scale(1.02);
+  }
+
   .brutal-btn:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
+    transform: scale(0.98);
   }
 
   .brutal-btn-primary {
-    background-color: var(--color-primary);
+    background-color: black;
     color: white;
   }
   
   .brutal-btn-primary:hover {
-    background-color: #1e40af; /* blue-800 */
+    background-color: #1a1a1a;
   }
 
   .brutal-btn-accent {
@@ -70,11 +83,11 @@
   }
   
   .brutal-btn-accent:hover {
-    background-color: #eab308; /* yellow-500 */
+    background-color: #b3d91f;
   }
   
   .brutal-border {
-    border-width: 4px;
+    border-width: 2px;
     border-color: black;
   }
 }
