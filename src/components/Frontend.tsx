@@ -88,7 +88,7 @@ const Navbar = ({ onHome, isAdmin, onToggleAdmin }: { onHome: () => void; isAdmi
             onClick={() => window.open('https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
             className="px-6 py-2 rounded-full border-2 border-black font-black hover:bg-black hover:text-white transition-all"
           >
-            Request a quote
+            Departments
           </button>
         </div>
 
@@ -516,7 +516,7 @@ export default function Frontend() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a href="#departments" className="px-8 py-4 rounded-full bg-black text-white font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-black transition-all text-center">
-                Book a consultation
+                Browse through departments 
               </a>
             </div>
           </motion.div>
