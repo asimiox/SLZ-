@@ -24,12 +24,153 @@ import {
   Plus,
   Trash2,
   Lock,
-  Unlock
+  Unlock,
+  Bot,
+  Send,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Department, Resource } from '../types';
+import { GoogleGenAI } from "@google/genai";
+import Markdown from 'react-markdown';
 
 const SECRET_CODE = 'SLZ-2026';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
+const AIChatbot = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([
+    { role: 'model', text: 'Hello! I am SLZ AI Assistant. How can I help you with your academic journey today?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setIsTyping(true);
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [...messages, { role: 'user', text: userMessage }].map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }]
+        })),
+        config: {
+          systemInstruction: `You are the official AI assistant of "Student Learning Zone (SLZ)".
+Your main purpose is to help students by providing guidance strictly based on the material and services available on the SLZ website.
+
+STRICT BOUNDARIES:
+1. ONLY provide information that is available on the SLZ platform. This includes departments (BSCS, BSIT, English, etc.), resources (Notes, Past Papers), societies (Library, Explorers, Jobs Network), and platforms (Books Store, WhatsApp Channel).
+2. Do NOT provide general information about Punjab University or any other external topics unless it directly relates to the resources listed on SLZ.
+3. If asked about founders, state that SLZ was founded by Madam Azhaka in 2025. If asked about the website developer, state that the website was made by Asim Nawaz. Do NOT invent other names.
+4. If a user asks for information not found on the SLZ website, politely state that you do not have that information and guide them to the relevant SLZ sections or communities.
+
+BEHAVIOR RULES:
+1. Be SHORT and DIRECT. Max 3-6 lines.
+2. Use bullet points for clarity.
+3. No unnecessary introductions or background info.
+4. Structure: Short Answer → Key Points.
+5. Be friendly but professional.
+6. Never repeat the same sentences in multiple replies.
+
+IMPORTANT: You are a strictly bound assistant for SLZ website material. Do not misguide users with external or unverified information.`,
+        }
+      });
+
+      const aiText = response.text || "I'm sorry, I couldn't process that right now.";
+      setMessages(prev => [...prev, { role: 'model', text: aiText }]);
+    } catch (error) {
+      console.error("AI Error:", error);
+      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I'm having trouble connecting to my brain right now. Please try again later." }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  return (
+    <div className="fixed bottom-8 right-8 z-[150]">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="brutal-card bg-white w-[350px] sm:w-[400px] h-[500px] flex flex-col overflow-hidden mb-4 shadow-2xl"
+          >
+            <div className="bg-black p-4 flex justify-between items-center">
+              <div className="flex items-center gap-2 text-primary">
+                <Bot size={20} />
+                <span className="font-black uppercase tracking-widest text-xs">SLZ AI Assistant</span>
+              </div>
+              <button onClick={() => setIsOpen(false)} className="text-white hover:text-primary transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-black">
+              {messages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${
+                    m.role === 'user' 
+                      ? 'bg-primary text-black rounded-tr-none' 
+                      : 'bg-gray-100 text-black rounded-tl-none'
+                  }`}>
+                    <div className="markdown-body">
+                      <Markdown>{m.text}</Markdown>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 p-3 rounded-2xl rounded-tl-none flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-black/10">
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                className="flex gap-2"
+              >
+                <input
+                  type="text"
+                  placeholder="Ask me anything..."
+                  className="flex-grow p-3 border-2 border-black rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                />
+                <button 
+                  type="submit"
+                  className="w-12 h-12 bg-black text-primary rounded-xl flex items-center justify-center hover:scale-105 transition-transform"
+                >
+                  <Send size={20} />
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-16 h-16 bg-black text-primary rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform group"
+      >
+        {isOpen ? <X size={32} /> : <Sparkles size={32} className="group-hover:rotate-12 transition-transform" />}
+      </button>
+    </div>
+  );
+};
 
 const INITIAL_DEPARTMENTS: Department[] = [
   { id: 1, name: 'BS English', whatsapp_link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
@@ -44,6 +185,65 @@ const INITIAL_DEPARTMENTS: Department[] = [
   { id: 10, name: 'PHARM-D (Prof-01)', whatsapp_link: 'https://chat.whatsapp.com/GxUzlQCR2ROIsTfHT8F4JX' },
   { id: 11, name: 'PHARM-D (Prof-02)', whatsapp_link: 'https://chat.whatsapp.com/IWUY8XFn7Ta8t4EIWWzTre' },
   { id: 12, name: 'PHARM-D (Prof-03)', whatsapp_link: 'https://chat.whatsapp.com/I9Zh7AaQZxO9aXUmIdwwcT' }
+];
+
+const INITIAL_RESOURCES: Resource[] = [
+  {
+    id: 1001,
+    department_id: 3,
+    semester_number: 2,
+    subject_id: 0,
+    category_id: 0,
+    title: 'BSCS 2nd Semester Resources',
+    drive_link: 'https://drive.google.com/drive/folders/1velMfY-Q1laprB6fQVj3NAAyNhqjxB4m',
+    description: 'Complete study material, notes, and resources for BSCS 2nd Semester.',
+    status: 'active',
+    category_name: 'Notes',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 1002,
+    department_id: 3,
+    semester_number: 4,
+    subject_id: 0,
+    category_id: 0,
+    title: 'BSCS 4th Semester Resources',
+    drive_link: 'https://drive.google.com/drive/folders/10uy_uilJIDapY3E2o93wTXGX_nXqQHE7',
+    description: 'Complete study material, notes, and resources for BSCS 4th Semester.',
+    status: 'active',
+    category_name: 'Notes',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 1003,
+    department_id: 3,
+    semester_number: 6,
+    subject_id: 0,
+    category_id: 0,
+    title: 'BSCS 6th Semester Resources',
+    drive_link: 'https://drive.google.com/drive/folders/14zAFwDZeZOMhcft3F18mjSCo-6VPtMgu',
+    description: 'Complete study material, notes, and resources for BSCS 6th Semester.',
+    status: 'active',
+    category_name: 'Notes',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 1004,
+    department_id: 3,
+    semester_number: 8,
+    subject_id: 0,
+    category_id: 0,
+    title: 'BSCS 8th Semester Resources',
+    drive_link: 'https://drive.google.com/drive/folders/1G0U-KJHVqLKhT19q-K6AN8nwmi_vnc5N',
+    description: 'Complete study material, notes, and resources for BSCS 8th Semester.',
+    status: 'active',
+    category_name: 'Notes',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
 ];
 
 const PLATFORMS = [
@@ -67,10 +267,13 @@ const Navbar = ({ onHome, isAdmin, onToggleAdmin }: { onHome: () => void; isAdmi
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/10 px-4 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onHome}>
-          <div className="w-10 h-10 bg-black flex items-center justify-center text-primary font-black text-xl rounded-xl transition-transform group-hover:scale-110">
-            S
+          <div className="w-10 h-10 bg-black flex items-center justify-center text-primary rounded-xl transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg">
+            <GraduationCap size={24} strokeWidth={2.5} />
           </div>
-          <span className="font-black text-xl tracking-tighter hidden sm:block">SLZ PU</span>
+          <div className="flex flex-col -space-y-1">
+            <span className="font-black text-xl tracking-tighter hidden sm:block">SLZ</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary hidden sm:block">Zone</span>
+          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-10 font-bold text-sm uppercase tracking-widest">
@@ -88,7 +291,7 @@ const Navbar = ({ onHome, isAdmin, onToggleAdmin }: { onHome: () => void; isAdmi
             onClick={() => window.open('https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
             className="px-6 py-2 rounded-full border-2 border-black font-black hover:bg-black hover:text-white transition-all"
           >
-            Departments
+            Request a quote
           </button>
         </div>
 
@@ -382,10 +585,19 @@ export default function Frontend() {
     }
 
     if (savedResources) {
-      setResources(JSON.parse(savedResources));
+      const parsedResources = JSON.parse(savedResources);
+      // Ensure initial resources are present
+      const mergedResources = [...parsedResources];
+      INITIAL_RESOURCES.forEach(initial => {
+        if (!mergedResources.some(r => r.id === initial.id)) {
+          mergedResources.push(initial);
+        }
+      });
+      setResources(mergedResources);
+      localStorage.setItem('slz_resources', JSON.stringify(mergedResources));
     } else {
-      setResources([]);
-      localStorage.setItem('slz_resources', JSON.stringify([]));
+      setResources(INITIAL_RESOURCES);
+      localStorage.setItem('slz_resources', JSON.stringify(INITIAL_RESOURCES));
     }
 
     setLoading(false);
@@ -504,7 +716,7 @@ export default function Frontend() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <span className="inline-block px-4 py-1 rounded-full bg-primary text-black font-black text-[10px] uppercase tracking-[0.2em] mb-8">
-              Established 2026
+              Established 2025
             </span>
             <h1 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.9] uppercase">
               Navigating the <br />
@@ -516,7 +728,7 @@ export default function Frontend() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a href="#departments" className="px-8 py-4 rounded-full bg-black text-white font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-black transition-all text-center">
-                Browse through departments 
+                Book a consultation
               </a>
             </div>
           </motion.div>
@@ -543,7 +755,7 @@ export default function Frontend() {
           <div className="flex flex-wrap justify-between items-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
             {PLATFORMS.map((p, i) => (
               <a key={i} href={p.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-black text-xl tracking-tighter uppercase">
-                {React.cloneElement(p.icon as React.ReactElement, { size: 20 })}
+                {React.cloneElement(p.icon as React.ReactElement, { size: 20 } as any)}
                 {p.title}
               </a>
             ))}
@@ -568,7 +780,7 @@ export default function Frontend() {
             </p>
             <div className="grid grid-cols-2 gap-8 pt-8">
               <div>
-                <div className="text-4xl font-black mb-2 tracking-tighter">2026</div>
+                <div className="text-4xl font-black mb-2 tracking-tighter">2025</div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Founded</div>
               </div>
               <div>
@@ -627,7 +839,7 @@ export default function Frontend() {
                   </div>
                 </div>
                 <div className={`w-24 h-24 rounded-3xl flex items-center justify-center flex-shrink-0 ${soc.variant === 'black' ? 'bg-white text-black' : 'bg-black text-primary'}`}>
-                  {React.cloneElement(soc.icon as React.ReactElement, { size: 40 })}
+                  {React.cloneElement(soc.icon as React.ReactElement, { size: 40 } as any)}
                 </div>
               </a>
             ))}
@@ -660,10 +872,10 @@ export default function Frontend() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {departments.length > 0 ? (
               departments.map((dept) => (
-                <button 
+                <div 
                   key={dept.id}
                   onClick={() => setSelectedDept(dept)}
-                  className="brutal-card p-8 text-left flex flex-col gap-6 group hover:bg-black hover:text-white transition-all duration-300 relative"
+                  className="brutal-card p-8 text-left flex flex-col gap-6 group hover:bg-black hover:text-white transition-all duration-300 relative cursor-pointer"
                 >
                   {isAdmin && (
                     <button 
@@ -683,7 +895,7 @@ export default function Frontend() {
                     </div>
                     View Resources
                   </div>
-                </button>
+                </div>
               ))
             ) : (
               <div className="col-span-full py-32 text-center rounded-[3rem] border-2 border-dashed border-black/10 bg-white">
@@ -699,6 +911,7 @@ export default function Frontend() {
       </section>
 
       <Footer />
+      <AIChatbot />
 
       {/* Secret Code Modal */}
       <AnimatePresence>
@@ -832,10 +1045,13 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-16">
       <div className="md:col-span-2 space-y-8">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-primary flex items-center justify-center text-black font-black text-2xl rounded-xl">
-            S
+          <div className="w-12 h-12 bg-primary flex items-center justify-center text-black rounded-xl shadow-lg">
+            <GraduationCap size={28} strokeWidth={2.5} />
           </div>
-          <span className="font-black text-2xl tracking-tighter uppercase">SLZ PU</span>
+          <div className="flex flex-col -space-y-1">
+            <span className="font-black text-2xl tracking-tighter uppercase">SLZ</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Zone</span>
+          </div>
         </div>
         <p className="font-medium text-gray-400 max-w-md leading-relaxed">
           The ultimate academic hub for PU students. Empowering education through community, shared resources, and digital innovation.
@@ -851,7 +1067,19 @@ const Footer = () => (
       </div>
       <div>
         <h4 className="font-black uppercase tracking-widest text-xs mb-8 text-primary">Contact</h4>
-        <p className="font-black uppercase text-[10px] tracking-[0.2em]">© 2026 Students Learning Zone – PU</p>
+        <div className="space-y-4">
+          <p className="font-black uppercase text-[10px] tracking-[0.2em]">© 2025-2026 Students Learning Zone – PU</p>
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex items-center gap-2 group">
+              <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center text-black">
+                <Sparkles size={12} />
+              </div>
+              <span className="font-black uppercase text-[9px] tracking-[0.3em] text-gray-400 group-hover:text-primary transition-colors">
+                Crafted by <span className="text-white">Asim Nawaz</span>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
