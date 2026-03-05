@@ -25,152 +25,12 @@ import {
   Trash2,
   Lock,
   Unlock,
-  Bot,
-  Send,
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Department, Resource } from '../types';
-import { GoogleGenAI } from "@google/genai";
-import Markdown from 'react-markdown';
 
 const SECRET_CODE = 'SLZ-2026';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
-const AIChatbot = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([
-    { role: 'model', text: 'Hello! I am SLZ AI Assistant. How can I help you with your academic journey today?' }
-  ]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
-
-    const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
-    setIsTyping(true);
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [...messages, { role: 'user', text: userMessage }].map(m => ({
-          role: m.role,
-          parts: [{ text: m.text }]
-        })),
-        config: {
-          systemInstruction: `You are the official AI assistant of "Student Learning Zone (SLZ)".
-Your main purpose is to help students by providing guidance strictly based on the material and services available on the SLZ website.
-
-STRICT BOUNDARIES:
-1. ONLY provide information that is available on the SLZ platform. This includes departments (BSCS, BSIT, English, etc.), resources (Notes, Past Papers), societies (Library, Explorers, Jobs Network), and platforms (Books Store, WhatsApp Channel).
-2. Do NOT provide general information about Punjab University or any other external topics unless it directly relates to the resources listed on SLZ.
-3. If asked about founders, state that SLZ was founded by Madam Azhaka in 2025. If asked about the website developer, state that the website was made by Asim Nawaz. Do NOT invent other names.
-4. If a user asks for information not found on the SLZ website, politely state that you do not have that information and guide them to the relevant SLZ sections or communities.
-
-BEHAVIOR RULES:
-1. Be SHORT and DIRECT. Max 3-6 lines.
-2. Use bullet points for clarity.
-3. No unnecessary introductions or background info.
-4. Structure: Short Answer → Key Points.
-5. Be friendly but professional.
-6. Never repeat the same sentences in multiple replies.
-
-IMPORTANT: You are a strictly bound assistant for SLZ website material. Do not misguide users with external or unverified information.`,
-        }
-      });
-
-      const aiText = response.text || "I'm sorry, I couldn't process that right now.";
-      setMessages(prev => [...prev, { role: 'model', text: aiText }]);
-    } catch (error) {
-      console.error("AI Error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I'm having trouble connecting to my brain right now. Please try again later." }]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  return (
-    <div className="fixed bottom-8 right-8 z-[150]">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="brutal-card bg-white w-[350px] sm:w-[400px] h-[500px] flex flex-col overflow-hidden mb-4 shadow-2xl"
-          >
-            <div className="bg-black p-4 flex justify-between items-center">
-              <div className="flex items-center gap-2 text-primary">
-                <Bot size={20} />
-                <span className="font-black uppercase tracking-widest text-xs">SLZ AI Assistant</span>
-              </div>
-              <button onClick={() => setIsOpen(false)} className="text-white hover:text-primary transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-black">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${
-                    m.role === 'user' 
-                      ? 'bg-primary text-black rounded-tr-none' 
-                      : 'bg-gray-100 text-black rounded-tl-none'
-                  }`}>
-                    <div className="markdown-body">
-                      <Markdown>{m.text}</Markdown>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-2xl rounded-tl-none flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                    <span className="w-1.5 h-1.5 bg-black/20 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 border-t border-black/10">
-              <form 
-                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                className="flex gap-2"
-              >
-                <input
-                  type="text"
-                  placeholder="Ask me anything..."
-                  className="flex-grow p-3 border-2 border-black rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                />
-                <button 
-                  type="submit"
-                  className="w-12 h-12 bg-black text-primary rounded-xl flex items-center justify-center hover:scale-105 transition-transform"
-                >
-                  <Send size={20} />
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-16 h-16 bg-black text-primary rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform group"
-      >
-        {isOpen ? <X size={32} /> : <Sparkles size={32} className="group-hover:rotate-12 transition-transform" />}
-      </button>
-    </div>
-  );
-};
 
 const INITIAL_DEPARTMENTS: Department[] = [
   { id: 1, name: 'BS English', whatsapp_link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
@@ -911,7 +771,6 @@ export default function Frontend() {
       </section>
 
       <Footer />
-      <AIChatbot />
 
       {/* Secret Code Modal */}
       <AnimatePresence>
