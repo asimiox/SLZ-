@@ -32,9 +32,21 @@ import { Department, Resource } from '../types';
 
 const SECRET_CODE = 'SLZ-2026';
 
+const CHEMISTRY_COMMUNITIES = [
+  { name: '🌐 Main Community', link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL' },
+  { name: '📚 Second Semester', link: 'https://chat.whatsapp.com/BVA0A5RBDkKG3l3Idtn5JZ' },
+  { name: '🎓 Fourth Semester', link: 'https://chat.whatsapp.com/DtyvoFhggVjFZdEFM2zO4t' },
+  { name: '🔬 Sixth Semester', link: 'https://chat.whatsapp.com/JvxyAXjoJXdB8kZxkszkQt' },
+  { name: '🧫 Analytical Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/GKnPPyhZ8c79tTSlXKtw1Y' },
+  { name: '🧬 Biochemistry (6th Sem)', link: 'https://chat.whatsapp.com/GRiBoI0C0g40CTXjO4daWn' },
+  { name: '⚗️ Applied Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/Etdv7pn5i7sJIIIiUpy8AD' },
+  { name: '💬 Chemist Zone - Discussion', link: 'https://chat.whatsapp.com/BUwdyzdEg4QLpdNdyHlU8V' },
+  { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug' }
+];
+
 const INITIAL_DEPARTMENTS: Department[] = [
   { id: 1, name: 'BS English', whatsapp_link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
-  { id: 2, name: 'BS Chemistry', whatsapp_link: 'https://chat.whatsapp.com/JOrTsUNoxUz3pkhk2IwRrX' },
+  { id: 2, name: 'BS Chemistry', whatsapp_link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL' },
   { id: 3, name: 'BS Computer Science (BSCS)', whatsapp_link: 'https://chat.whatsapp.com/FgokbFFSTk97rS2IjXU7S2' },
   { id: 4, name: 'BS Information Technology (BSIT)', whatsapp_link: 'https://chat.whatsapp.com/CN29l48FI3UCzU8vM7y02Z' },
   { id: 5, name: 'BS Botany', whatsapp_link: 'https://chat.whatsapp.com/FlzUdgtjO5rGSkfNn1omeG' },
@@ -335,13 +347,34 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               </div>
               Community
             </h3>
-            <p className="font-medium opacity-70 mb-8 leading-relaxed">Join the official WhatsApp group for {dept.name} students to stay updated with real-time news and peer support.</p>
-            <button 
-              onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
-              className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
-            >
-              Join WhatsApp Group
-            </button>
+            <p className="font-medium opacity-70 mb-8 leading-relaxed">
+              {dept.name === 'BS Chemistry' 
+                ? 'Join the relevant Chemistry WhatsApp groups according to your semester or interest to stay updated and support each other.'
+                : `Join the official WhatsApp group for ${dept.name} students to stay updated with real-time news and peer support.`
+              }
+            </p>
+            
+            {dept.name === 'BS Chemistry' ? (
+              <div className="space-y-3">
+                {CHEMISTRY_COMMUNITIES.map((comm, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => window.open(comm.link, '_blank')}
+                    className="w-full py-3 px-4 rounded-xl bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center justify-between group"
+                  >
+                    <span>{comm.name}</span>
+                    <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button 
+                onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
+                className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+              >
+                Join WhatsApp Group
+              </button>
+            )}
           </div>
         </div>
       </div>
