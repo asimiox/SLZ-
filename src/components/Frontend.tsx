@@ -44,6 +44,16 @@ const CHEMISTRY_COMMUNITIES = [
   { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug', semester: 0, desc: 'Dedicated group for lab-related discussions and practical guidance.' }
 ];
 
+const ENGLISH_COMMUNITIES = [
+  { name: '🗣 Discussion Group', link: 'https://chat.whatsapp.com/BIayQngNOsQ9SWveoNpjgG?mode=gi_t', semester: 0, desc: 'General discussion group for English students to interact and share knowledge.' },
+  { name: '🧠 Brain Lit Talk', link: 'https://chat.whatsapp.com/LDANVWOqtS96Gwd0urynsg?mode=gi_t', semester: 0, desc: 'A dedicated platform for literature discussions and intellectual growth.' },
+  { name: '🌍 Lingua Spark', link: 'https://chat.whatsapp.com/BhrIJS4UHk78ii7MyO2p8H?mode=gi_t', semester: 0, desc: 'Focus on language, linguistics, and communicative skills.' },
+  { name: '2️⃣ 2nd Semester', link: 'https://chat.whatsapp.com/EQATv9mRrjW2lHwIP8VYN4?mode=gi_t', semester: 2, desc: 'Official group for English 2nd Semester students.' },
+  { name: '4️⃣ 4th Semester', link: 'https://chat.whatsapp.com/KbUD87H4aikIpv3ULoUVdm?mode=gi_t', semester: 4, desc: 'Official group for English 4th Semester students.' },
+  { name: '6️⃣ 6th Semester', link: 'https://chat.whatsapp.com/GwoqaqZAUNU9w4sOHC7NUi?mode=gi_t', semester: 6, desc: 'Official group for English 6th Semester students.' },
+  { name: '8️⃣ 8th Semester – Final Year', link: 'https://chat.whatsapp.com/I2EIGbiCrBWFwtjJydZEt8?mode=gi_t', semester: 8, desc: 'Official group for English 8th Semester (Final Year) students.' }
+];
+
 const INITIAL_DEPARTMENTS: Department[] = [
   { id: 1, name: 'BS English', whatsapp_link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
   { id: 2, name: 'BS Chemistry', whatsapp_link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL' },
@@ -294,8 +304,11 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
   });
 
   const filteredResources = resources.filter(r => r.department_id === dept.id && r.semester_number === activeSemester);
-  const semesterChemistryCards: Resource[] = dept.name === 'BS Chemistry' 
-    ? CHEMISTRY_COMMUNITIES
+  
+  const getCommunityCards = () => {
+    const deptName = dept.name.toUpperCase();
+    if (deptName === 'BS CHEMISTRY') {
+      return CHEMISTRY_COMMUNITIES
         .filter(c => c.semester === activeSemester)
         .map((c, idx) => ({
           id: 9500 + idx,
@@ -306,12 +319,34 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
           title: c.name,
           drive_link: c.link,
           description: c.desc,
-          status: 'active',
+          status: 'active' as const,
           category_name: 'Community',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }))
-    : [];
+        }));
+    }
+    if (deptName === 'BS ENGLISH') {
+      return ENGLISH_COMMUNITIES
+        .filter(c => c.semester === activeSemester)
+        .map((c, idx) => ({
+          id: 9600 + idx,
+          department_id: dept.id,
+          semester_number: activeSemester,
+          subject_id: 0,
+          category_id: 0,
+          title: c.name,
+          drive_link: c.link,
+          description: c.desc,
+          status: 'active' as const,
+          category_name: 'Community',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+    }
+    return [];
+  };
+
+  const semesterCommunityCards: Resource[] = getCommunityCards();
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,9 +415,9 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               )}
             </div>
 
-            {(filteredResources.length > 0 || semesterChemistryCards.length > 0) ? (
+            {(filteredResources.length > 0 || semesterCommunityCards.length > 0) ? (
               <div className="grid sm:grid-cols-2 gap-6">
-                {semesterChemistryCards.map(r => (
+                {semesterCommunityCards.map(r => (
                   <ResourceCard 
                     key={r.id} 
                     resource={r} 
@@ -420,15 +455,15 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               Community
             </h3>
             <p className="font-medium opacity-70 mb-8 leading-relaxed">
-              {dept.name === 'BS Chemistry' 
-                ? 'Join the official Chemistry WhatsApp groups to stay updated and support each other.'
+              {dept.name.toUpperCase() === 'BS CHEMISTRY' || dept.name.toUpperCase() === 'BS ENGLISH'
+                ? `Join the official ${dept.name.replace(/BS\s+/i, '')} WhatsApp groups to stay updated and support each other.`
                 : `Join the official WhatsApp group for ${dept.name} students to stay updated with real-time news and peer support.`
               }
             </p>
             
-            {dept.name === 'BS Chemistry' ? (
+            {dept.name.toUpperCase() === 'BS CHEMISTRY' || dept.name.toUpperCase() === 'BS ENGLISH' ? (
               <div className="space-y-3">
-                {CHEMISTRY_COMMUNITIES
+                {(dept.name.toUpperCase() === 'BS CHEMISTRY' ? CHEMISTRY_COMMUNITIES : ENGLISH_COMMUNITIES)
                   .filter(c => c.semester === 0)
                   .map((comm, idx) => (
                     <button 
