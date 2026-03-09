@@ -33,15 +33,15 @@ import { Department, Resource } from '../types';
 const SECRET_CODE = 'SLZ-2026';
 
 const CHEMISTRY_COMMUNITIES = [
-  { name: '🌐 Main Community', link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL' },
-  { name: '📚 Second Semester', link: 'https://chat.whatsapp.com/BVA0A5RBDkKG3l3Idtn5JZ' },
-  { name: '🎓 Fourth Semester', link: 'https://chat.whatsapp.com/DtyvoFhggVjFZdEFM2zO4t' },
-  { name: '🔬 Sixth Semester', link: 'https://chat.whatsapp.com/JvxyAXjoJXdB8kZxkszkQt' },
-  { name: '🧫 Analytical Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/GKnPPyhZ8c79tTSlXKtw1Y' },
-  { name: '🧬 Biochemistry (6th Sem)', link: 'https://chat.whatsapp.com/GRiBoI0C0g40CTXjO4daWn' },
-  { name: '⚗️ Applied Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/Etdv7pn5i7sJIIIiUpy8AD' },
-  { name: '💬 Chemist Zone - Discussion', link: 'https://chat.whatsapp.com/BUwdyzdEg4QLpdNdyHlU8V' },
-  { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug' }
+  { name: '🌐 Main Community', link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL', semester: 0 },
+  { name: '📚 Second Semester', link: 'https://chat.whatsapp.com/BVA0A5RBDkKG3l3Idtn5JZ', semester: 2 },
+  { name: '🎓 Fourth Semester', link: 'https://chat.whatsapp.com/DtyvoFhggVjFZdEFM2zO4t', semester: 4 },
+  { name: '🔬 Sixth Semester', link: 'https://chat.whatsapp.com/JvxyAXjoJXdB8kZxkszkQt', semester: 6 },
+  { name: '🧫 Analytical Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/GKnPPyhZ8c79tTSlXKtw1Y', semester: 6 },
+  { name: '🧬 Biochemistry (6th Sem)', link: 'https://chat.whatsapp.com/GRiBoI0C0g40CTXjO4daWn', semester: 6 },
+  { name: '⚗️ Applied Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/Etdv7pn5i7sJIIIiUpy8AD', semester: 6 },
+  { name: '💬 Chemist Zone - Discussion', link: 'https://chat.whatsapp.com/BUwdyzdEg4QLpdNdyHlU8V', semester: 0 },
+  { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug', semester: 0 }
 ];
 
 const INITIAL_DEPARTMENTS: Department[] = [
@@ -248,6 +248,9 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
   });
 
   const filteredResources = resources.filter(r => r.department_id === dept.id && r.semester_number === activeSemester);
+  const semesterLinks = dept.name === 'BS Chemistry' 
+    ? CHEMISTRY_COMMUNITIES.filter(c => c.semester === activeSemester || c.semester === 0)
+    : [];
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,6 +319,27 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               )}
             </div>
 
+            {dept.name === 'BS Chemistry' && semesterLinks.length > 0 && (
+              <div className="mb-12">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-2">
+                  <MessageCircle size={14} />
+                  Community Links
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {semesterLinks.map((comm, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => window.open(comm.link, '_blank')}
+                      className="brutal-card p-4 bg-primary text-black flex items-center justify-between group hover:bg-black hover:text-white transition-all"
+                    >
+                      <span className="font-black uppercase text-[10px] tracking-widest">{comm.name}</span>
+                      <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {filteredResources.length > 0 ? (
               <div className="grid sm:grid-cols-2 gap-6">
                 {filteredResources.map(r => (
@@ -347,34 +371,13 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               </div>
               Community
             </h3>
-            <p className="font-medium opacity-70 mb-8 leading-relaxed">
-              {dept.name === 'BS Chemistry' 
-                ? 'Join the relevant Chemistry WhatsApp groups according to your semester or interest to stay updated and support each other.'
-                : `Join the official WhatsApp group for ${dept.name} students to stay updated with real-time news and peer support.`
-              }
-            </p>
-            
-            {dept.name === 'BS Chemistry' ? (
-              <div className="space-y-3">
-                {CHEMISTRY_COMMUNITIES.map((comm, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => window.open(comm.link, '_blank')}
-                    className="w-full py-3 px-4 rounded-xl bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center justify-between group"
-                  >
-                    <span>{comm.name}</span>
-                    <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <button 
-                onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
-                className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
-              >
-                Join WhatsApp Group
-              </button>
-            )}
+            <p className="font-medium opacity-70 mb-8 leading-relaxed">Join the official WhatsApp group for {dept.name} students to stay updated with real-time news and peer support.</p>
+            <button 
+              onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
+              className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+            >
+              Join WhatsApp Group
+            </button>
           </div>
         </div>
       </div>
