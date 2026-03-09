@@ -33,15 +33,15 @@ import { Department, Resource } from '../types';
 const SECRET_CODE = 'SLZ-2026';
 
 const CHEMISTRY_COMMUNITIES = [
-  { name: '🌐 Main Community', link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL', semester: 0 },
-  { name: '📚 Second Semester', link: 'https://chat.whatsapp.com/BVA0A5RBDkKG3l3Idtn5JZ', semester: 2 },
-  { name: '🎓 Fourth Semester', link: 'https://chat.whatsapp.com/DtyvoFhggVjFZdEFM2zO4t', semester: 4 },
-  { name: '🔬 Sixth Semester', link: 'https://chat.whatsapp.com/JvxyAXjoJXdB8kZxkszkQt', semester: 6 },
-  { name: '🧫 Analytical Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/GKnPPyhZ8c79tTSlXKtw1Y', semester: 6 },
-  { name: '🧬 Biochemistry (6th Sem)', link: 'https://chat.whatsapp.com/GRiBoI0C0g40CTXjO4daWn', semester: 6 },
-  { name: '⚗️ Applied Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/Etdv7pn5i7sJIIIiUpy8AD', semester: 6 },
-  { name: '💬 Chemist Zone - Discussion', link: 'https://chat.whatsapp.com/BUwdyzdEg4QLpdNdyHlU8V', semester: 0 },
-  { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug', semester: 0 }
+  { name: '🌐 Main Chemistry Community', link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL', semester: 0, desc: 'Official chemistry community for updates, study topics, and academic support.' },
+  { name: '📚 Chemistry - 2nd Semester', link: 'https://chat.whatsapp.com/BVA0A5RBDkKG3l3Idtn5JZ', semester: 2, desc: 'WhatsApp group for Chemistry 2nd Semester students to share resources and discuss topics.' },
+  { name: '🎓 Chemistry - 4th Semester', link: 'https://chat.whatsapp.com/DtyvoFhggVjFZdEFM2zO4t', semester: 4, desc: 'WhatsApp group for Chemistry 4th Semester students for academic collaboration.' },
+  { name: '🔬 Chemistry - 6th Semester', link: 'https://chat.whatsapp.com/JvxyAXjoJXdB8kZxkszkQt', semester: 6, desc: 'WhatsApp group for Chemistry 6th Semester students to stay updated.' },
+  { name: '🧫 Analytical Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/GKnPPyhZ8c79tTSlXKtw1Y', semester: 6, desc: 'Optional specialized group for Analytical Chemistry students.' },
+  { name: '🧬 Biochemistry (6th Sem)', link: 'https://chat.whatsapp.com/GRiBoI0C0g40CTXjO4daWn', semester: 6, desc: 'Optional specialized group for Biochemistry students.' },
+  { name: '⚗️ Applied Chemistry (6th Sem)', link: 'https://chat.whatsapp.com/Etdv7pn5i7sJIIIiUpy8AD', semester: 6, desc: 'Optional specialized group for Applied Chemistry students.' },
+  { name: '💬 Chemist Zone - Discussion', link: 'https://chat.whatsapp.com/BUwdyzdEg4QLpdNdyHlU8V', semester: 0, desc: 'General discussion group for all chemistry students to interact.' },
+  { name: '🧪 Basic Chemistry Lab', link: 'https://chat.whatsapp.com/Gx0Z1Vh759bDwDxMeucHug', semester: 0, desc: 'Dedicated group for lab-related discussions and practical guidance.' }
 ];
 
 const INITIAL_DEPARTMENTS: Department[] = [
@@ -230,6 +230,52 @@ const ResourceCard: React.FC<{ resource: Resource; isAdmin: boolean; onDelete: (
   </div>
 );
 
+const DepartmentCard = ({ 
+  dept, 
+  onClick, 
+  isAdmin, 
+  onDelete 
+}: { 
+  dept: Department; 
+  onClick: () => void; 
+  isAdmin: boolean; 
+  onDelete: (id: number, e: React.MouseEvent) => void 
+}) => {
+  return (
+    <motion.div 
+      whileHover={{ y: -12, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="brutal-card p-10 text-left flex flex-col gap-8 group hover:bg-black hover:text-white transition-all duration-300 relative cursor-pointer h-full"
+    >
+      {isAdmin && (
+        <button 
+          onClick={(e) => onDelete(dept.id, e)}
+          className="absolute top-4 right-4 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform z-10 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+        >
+          <Trash2 size={18} />
+        </button>
+      )}
+      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center text-black group-hover:bg-white transition-all duration-300 border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none">
+        <BookOpen size={40} />
+      </div>
+      <div className="space-y-3">
+        <h3 className="text-2xl font-black uppercase leading-tight tracking-tight group-hover:text-primary transition-colors">{dept.name}</h3>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-primary group-hover:bg-white animate-pulse"></span>
+          <p className="text-[10px] font-black opacity-50 uppercase tracking-widest">PU Affiliated</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 mt-auto font-black text-[11px] uppercase tracking-[0.2em] group-hover:text-primary transition-colors">
+        <div className="w-10 h-10 rounded-full border-2 border-current flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-black group-hover:border-black">
+          <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </div>
+        Explore Resources
+      </div>
+    </motion.div>
+  );
+};
+
 const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDeleteResource }: { 
   dept: Department, 
   onBack: () => void, 
@@ -248,8 +294,23 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
   });
 
   const filteredResources = resources.filter(r => r.department_id === dept.id && r.semester_number === activeSemester);
-  const semesterLinks = dept.name === 'BS Chemistry' 
-    ? CHEMISTRY_COMMUNITIES.filter(c => c.semester === activeSemester || c.semester === 0)
+  const semesterChemistryCards: Resource[] = dept.name === 'BS Chemistry' 
+    ? CHEMISTRY_COMMUNITIES
+        .filter(c => c.semester === activeSemester)
+        .map((c, idx) => ({
+          id: 9500 + idx,
+          department_id: dept.id,
+          semester_number: activeSemester,
+          subject_id: 0,
+          category_id: 0,
+          title: c.name,
+          drive_link: c.link,
+          description: c.desc,
+          status: 'active',
+          category_name: 'Community',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }))
     : [];
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -319,29 +380,16 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               )}
             </div>
 
-            {dept.name === 'BS Chemistry' && semesterLinks.length > 0 && (
-              <div className="mb-12">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-2">
-                  <MessageCircle size={14} />
-                  Community Links
-                </h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {semesterLinks.map((comm, idx) => (
-                    <button 
-                      key={idx}
-                      onClick={() => window.open(comm.link, '_blank')}
-                      className="brutal-card p-4 bg-primary text-black flex items-center justify-between group hover:bg-black hover:text-white transition-all"
-                    >
-                      <span className="font-black uppercase text-[10px] tracking-widest">{comm.name}</span>
-                      <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredResources.length > 0 ? (
+            {(filteredResources.length > 0 || semesterChemistryCards.length > 0) ? (
               <div className="grid sm:grid-cols-2 gap-6">
+                {semesterChemistryCards.map(r => (
+                  <ResourceCard 
+                    key={r.id} 
+                    resource={r} 
+                    isAdmin={false} 
+                    onDelete={() => {}} 
+                  />
+                ))}
                 {filteredResources.map(r => (
                   <ResourceCard 
                     key={r.id} 
@@ -371,13 +419,36 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               </div>
               Community
             </h3>
-            <p className="font-medium opacity-70 mb-8 leading-relaxed">Join the official WhatsApp group for {dept.name} students to stay updated with real-time news and peer support.</p>
-            <button 
-              onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
-              className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
-            >
-              Join WhatsApp Group
-            </button>
+            <p className="font-medium opacity-70 mb-8 leading-relaxed">
+              {dept.name === 'BS Chemistry' 
+                ? 'Join the official Chemistry WhatsApp groups to stay updated and support each other.'
+                : `Join the official WhatsApp group for ${dept.name} students to stay updated with real-time news and peer support.`
+              }
+            </p>
+            
+            {dept.name === 'BS Chemistry' ? (
+              <div className="space-y-3">
+                {CHEMISTRY_COMMUNITIES
+                  .filter(c => c.semester === 0)
+                  .map((comm, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => window.open(comm.link, '_blank')}
+                      className="w-full py-3 px-4 rounded-xl bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center justify-between group"
+                    >
+                      <span className="truncate pr-2">{comm.name}</span>
+                      <ChevronRight size={14} className="flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ))}
+              </div>
+            ) : (
+              <button 
+                onClick={() => window.open(dept.whatsapp_link || 'https://chat.whatsapp.com/channel/0029Vb6nPjuAojYoZdD8GQ1i', '_blank')}
+                className="w-full py-4 rounded-full bg-primary text-black font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+              >
+                Join WhatsApp Group
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -765,33 +836,16 @@ export default function Frontend() {
             )}
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {departments.length > 0 ? (
               departments.map((dept) => (
-                <div 
+                <DepartmentCard 
                   key={dept.id}
+                  dept={dept}
                   onClick={() => setSelectedDept(dept)}
-                  className="brutal-card p-8 text-left flex flex-col gap-6 group hover:bg-black hover:text-white transition-all duration-300 relative cursor-pointer"
-                >
-                  {isAdmin && (
-                    <button 
-                      onClick={(e) => handleDeleteDept(dept.id, e)}
-                      className="absolute top-4 right-4 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform z-10"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                  <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-black group-hover:bg-white transition-colors">
-                    <BookOpen size={32} />
-                  </div>
-                  <h3 className="text-xl font-black uppercase leading-tight tracking-tight">{dept.name}</h3>
-                  <div className="flex items-center gap-3 mt-auto font-black text-[10px] uppercase tracking-[0.2em] group-hover:text-primary transition-colors">
-                    <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
-                      <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    View Resources
-                  </div>
-                </div>
+                  isAdmin={isAdmin}
+                  onDelete={handleDeleteDept}
+                />
               ))
             ) : (
               <div className="col-span-full py-32 text-center rounded-[3rem] border-2 border-dashed border-black/10 bg-white">
