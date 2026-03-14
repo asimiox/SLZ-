@@ -54,6 +54,14 @@ const ENGLISH_COMMUNITIES = [
   { name: '8️⃣ 8th Semester – Final Year', link: 'https://chat.whatsapp.com/I2EIGbiCrBWFwtjJydZEt8?mode=gi_t', semester: 8, desc: 'Official group for English 8th Semester (Final Year) students.' }
 ];
 
+const ZOOLOGY_COMMUNITIES = [
+  { name: '💬 Discussion Group', link: 'https://chat.whatsapp.com/G9rXW0xEMWwHWY5WbtvR13?mode=hq2tcla', semester: 0, desc: 'General discussion group for Zoology students.' },
+  { name: '📘 2nd Semester', link: 'https://chat.whatsapp.com/GGTskl58ZsK4Dy0V8b9LGy?mode=hq2tcla', semester: 2, desc: 'Official group for Zoology 2nd Semester students.' },
+  { name: '📗 4th Semester', link: 'https://chat.whatsapp.com/BMqPbKtE133GrhTvUl2ivU?mode=hqctcla', semester: 4, desc: 'Official group for Zoology 4th Semester students.' },
+  { name: '📙 6th Semester', link: 'https://chat.whatsapp.com/Hq67VDqDjOv0Md46NUQy0v?mode=gi_t', semester: 6, desc: 'Official group for Zoology 6th Semester students.' },
+  { name: '📕 8th Semester', link: 'https://chat.whatsapp.com/C5iX8vgUPh080YA0Yow5Zi?mode=gi_t', semester: 8, desc: 'Official group for Zoology 8th Semester students.' }
+];
+
 const INITIAL_DEPARTMENTS: Department[] = [
   { id: 1, name: 'BS English', whatsapp_link: 'https://chat.whatsapp.com/Jd5ReObT8V82BuQQHvP8zL' },
   { id: 2, name: 'BS Chemistry', whatsapp_link: 'https://chat.whatsapp.com/JXEv12WAraTBuvidhYw5JL' },
@@ -553,6 +561,24 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
           updated_at: new Date().toISOString()
         }));
     }
+    if (deptName === 'BS ZOOLOGY') {
+      return ZOOLOGY_COMMUNITIES
+        .filter(c => c.semester === activeSemester)
+        .map((c, idx) => ({
+          id: 9700 + idx,
+          department_id: dept.id,
+          semester_number: activeSemester,
+          subject_id: 0,
+          category_id: 0,
+          title: c.name,
+          drive_link: c.link,
+          description: c.desc,
+          status: 'active' as const,
+          category_name: 'Community',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+    }
     return [];
   };
 
@@ -665,15 +691,15 @@ const DepartmentPage = ({ dept, onBack, isAdmin, resources, onAddResource, onDel
               Community
             </h3>
             <p className="font-medium opacity-70 mb-8 leading-relaxed">
-              {dept.name.toUpperCase() === 'BS CHEMISTRY' || dept.name.toUpperCase() === 'BS ENGLISH'
+              {['BS CHEMISTRY', 'BS ENGLISH', 'BS ZOOLOGY'].includes(dept.name.toUpperCase())
                 ? `Join the official ${dept.name.replace(/BS\s+/i, '')} WhatsApp groups to stay updated and support each other.`
                 : `Join the official WhatsApp group for ${dept.name} students to stay updated with real-time news and peer support.`
               }
             </p>
             
-            {dept.name.toUpperCase() === 'BS CHEMISTRY' || dept.name.toUpperCase() === 'BS ENGLISH' ? (
+            {['BS CHEMISTRY', 'BS ENGLISH', 'BS ZOOLOGY'].includes(dept.name.toUpperCase()) ? (
               <div className="space-y-3">
-                {(dept.name.toUpperCase() === 'BS CHEMISTRY' ? CHEMISTRY_COMMUNITIES : ENGLISH_COMMUNITIES)
+                {(dept.name.toUpperCase() === 'BS CHEMISTRY' ? CHEMISTRY_COMMUNITIES : (dept.name.toUpperCase() === 'BS ENGLISH' ? ENGLISH_COMMUNITIES : ZOOLOGY_COMMUNITIES))
                   .filter(c => c.semester === 0)
                   .map((comm, idx) => (
                     <button 
